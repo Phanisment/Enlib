@@ -18,10 +18,6 @@ public class FlatParticleType implements ParticleEffect {
 	private final Vector3f rotation;
 	private final float scale;
 	
-	public FlatParticleType() {
-		this(null, 0f);
-	}
-	
 	public FlatParticleType(Vector3f rotation, float scale) {
 		this.rotation = rotation;
 		this.scale = scale;
@@ -43,7 +39,7 @@ public class FlatParticleType implements ParticleEffect {
 	static {
 		CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			Codecs.VECTOR_3F.fieldOf("rotation").forGetter(FlatParticleType::getRotation),
-			Codec.FLOAT.fieldOf("scale").forGetter(FlatParticleType::getScale)
+			Codec.FLOAT.fieldOf("size").forGetter(FlatParticleType::getScale)
 		).apply(i, FlatParticleType::new));
 		
 		PACKET_CODEC = PacketCodec.tuple(

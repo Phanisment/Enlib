@@ -18,16 +18,22 @@ import org.joml.Vector3f;
 @Environment(EnvType.CLIENT)
 public class FlatParticleEffect extends SpriteBillboardParticle {
 	private final Vector3f rotation;
-
-	public FlatParticleEffect(ClientWorld world, double x, double y, double z, Vector3f rotation, float scale) {
+	private final SpriteProvider sprite;
+	
+	public FlatParticleEffect(ClientWorld world, double x, double y, double z, Vector3f rotation, float scale, SpriteProvider sprite) {
 		super(world, x, y, z, 0.0D, 0.0D, 0.0D);
 		this.scale = scale;
 		this.maxAge = 40;
 		this.rotation = rotation;
+		this.sprite = sprite;
+		this.setSpriteForAge(sprite);
+		this.setAlpha(1.0F);
 	}
 	
 	@Override
 	public void tick() {
+		super.tick();
+		this.setSpriteForAge(sprite);
 	}
 	
 	@Override
@@ -60,18 +66,10 @@ public class FlatParticleEffect extends SpriteBillboardParticle {
 		vertexConsumer.vertex(px - size, py, pz - size).texture(u0, v1).color(red, green, blue, alpha).light(light);
 	}
 	
-	public static class Factory implements ParticleFactory<FlatParticleType> {
-		private final SpriteProvider spriteProvider;
-		
-		public Factory(SpriteProvider spriteProvider) {
-			this.spriteProvider = spriteProvider;
-		}
-		
+	public static record Factory(SpriteProvider sprite) implements ParticleFactory<FlatParticleType> {
 		@Override
 		public Particle createParticle(FlatParticleType prams, ClientWorld world, double x, double y, double z, double vX, double vY, double vZ) {
-			FlatParticleEffect p = new FlatParticleEffect(world, x, y, z, prams.getRotation(), prams.getScale());
-			p.setSpriteForAge(spriteProvider);
-			p.setAlpha(1.0F);
+			FlatParticleEffect p = new FlatParticleEffect(world, x, y, z, prams.getRotation(), prams.getScale(), this.sprite());
 			return p;
 		}
 	}
