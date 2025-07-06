@@ -18,7 +18,7 @@
 			"io.phanisment.enlib.Client"
 		],
 		"main": [
-			"io.phanisment.enlib.Enlib"
+			"io.phanisment.enlib.Main"
 		]
 	},
 	"mixins": [

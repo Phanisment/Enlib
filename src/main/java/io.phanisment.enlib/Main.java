@@ -6,15 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.phanisment.enlib.particle.EnlibParticleTypes;
-import io.phanisment.enlib.item.EnlibItems;
 
-public class Enlib implements ModInitializer {
+public class Main implements ModInitializer {
 	public static final String id = "enlib";
 	public static final Logger logger = LoggerFactory.getLogger(id);
 	
 	@Override
 	public void onInitialize() {
 		new EnlibParticleTypes();
-		new EnlibItems();
 	}
 }

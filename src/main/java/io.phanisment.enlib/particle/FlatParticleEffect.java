@@ -23,7 +23,6 @@ public class FlatParticleEffect extends SpriteBillboardParticle {
 	public FlatParticleEffect(ClientWorld world, double x, double y, double z, Vector3f rotation, float scale, SpriteProvider sprite) {
 		super(world, x, y, z, 0.0D, 0.0D, 0.0D);
 		this.scale = scale;
-		this.maxAge = 40;
 		this.rotation = rotation;
 		this.sprite = sprite;
 		this.setSpriteForAge(sprite);
@@ -32,7 +31,6 @@ public class FlatParticleEffect extends SpriteBillboardParticle {
 	
 	@Override
 	public void tick() {
-		super.tick();
 		this.setSpriteForAge(sprite);
 	}
 	
@@ -42,8 +40,9 @@ public class FlatParticleEffect extends SpriteBillboardParticle {
 	}
 	
 	@Override
-	public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float ticks) {
-		float size = this.getSize(ticks) * scale;
+	public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tick) {
+		float size = this.getSize(tick) * this.scale;
+		
 		float px = (float)(this.x - camera.getPos().x);
 		float py = (float)(this.y - camera.getPos().y);
 		float pz = (float)(this.z - camera.getPos().z);
@@ -52,18 +51,37 @@ public class FlatParticleEffect extends SpriteBillboardParticle {
 		float u1 = this.getMaxU();
 		float v0 = this.getMinV();
 		float v1 = this.getMaxV();
+		int light = this.getBrightness(tick);
 		
-		int light = this.getBrightness(ticks);
+		Quaternionf rotation = new Quaternionf().rotateXYZ(
+			(float)Math.toRadians(this.rotation.x),
+			(float)Math.toRadians(this.rotation.y),
+			(float)Math.toRadians(this.rotation.z)
+		);
 		
-		vertexConsumer.vertex(px - size, py, pz - size).texture(u0, v1).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px + size, py, pz - size).texture(u1, v1).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px + size, py, pz + size).texture(u1, v0).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px - size, py, pz + size).texture(u0, v0).color(red, green, blue, alpha).light(light);
+		Vector3f[] originalCorners = new Vector3f[] {
+			new Vector3f(-size, 0, -size),
+			new Vector3f( size, 0, -size),
+			new Vector3f( size, 0,  size),
+			new Vector3f(-size, 0,  size)
+		};
 		
-		vertexConsumer.vertex(px - size, py, pz + size).texture(u0, v0).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px + size, py, pz + size).texture(u1, v0).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px + size, py, pz - size).texture(u1, v1).color(red, green, blue, alpha).light(light);
-		vertexConsumer.vertex(px - size, py, pz - size).texture(u0, v1).color(red, green, blue, alpha).light(light);
+		Vector3f[] rotated = new Vector3f[4];
+		for (int i = 0; i < 4; i++) {
+			rotated[i] = new Vector3f(originalCorners[i]);
+			rotation.transform(rotated[i]);
+		}
+		
+		vertexConsumer.vertex(px + rotated[0].x, py + rotated[0].y, pz + rotated[0].z).texture(u0, v1).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[1].x, py + rotated[1].y, pz + rotated[1].z).texture(u1, v1).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[2].x, py + rotated[2].y, pz + rotated[2].z).texture(u1, v0).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[3].x, py + rotated[3].y, pz + rotated[3].z).texture(u0, v0).color(red, green, blue, alpha).light(light);
+		
+		float offsetY = 0.001f;
+		vertexConsumer.vertex(px + rotated[3].x, py + rotated[3].y + offsetY, pz + rotated[3].z).texture(u0, v0).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[2].x, py + rotated[2].y + offsetY, pz + rotated[2].z).texture(u1, v0).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[1].x, py + rotated[1].y + offsetY, pz + rotated[1].z).texture(u1, v1).color(red, green, blue, alpha).light(light);
+		vertexConsumer.vertex(px + rotated[0].x, py + rotated[0].y + offsetY, pz + rotated[0].z).texture(u0, v1).color(red, green, blue, alpha).light(light);
 	}
 	
 	public static record Factory(SpriteProvider sprite) implements ParticleFactory<FlatParticleType> {
